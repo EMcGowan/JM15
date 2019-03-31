@@ -25,6 +25,7 @@ pipeline {
           dir('./charts/preview') {
             sh "make preview"
             sh "jx preview --app $APP_NAME --dir ../.."
+            sh 'rm Dockerfile'
             sh 'echo FROM $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION > dockerfile'
             sh 'echo ADD https://get.aquasec.com/microscanner / >> dockerfile'
             sh 'echo RUN chmod +x /microscanner >> dockerfile' 
