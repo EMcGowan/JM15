@@ -25,14 +25,7 @@ pipeline {
           dir('./charts/preview') {
             sh "make preview"
             sh "jx preview --app $APP_NAME --dir ../.."
-            sh 'rm Dockerfile'
-            sh 'echo FROM $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION > dockerfile'
-            sh 'echo ADD https://get.aquasec.com/microscanner / >> dockerfile'
-            sh 'echo RUN chmod +x /microscanner >> dockerfile' 
-            sh 'echo ARG token  >> dockerfile'
-            sh 'echo RUN /microscanner "\$"{token} --no-verify --full-output >> dockerfile'
-            sh 'echo RUN echo No vulnerabilities!  >> dockerfile'
-            sh 'docker build --build-arg=token=NjUxMTUxZDA2MGFi --no-cache --network=host . '
+            
           }
         }
       }
@@ -69,7 +62,13 @@ pipeline {
 
             // release the helm chart
             sh "jx step helm release"
-
+            sh 'echo FROM $DOCKER_REGISTRY/$ORG/$APP_NAME:$(cat ../../VERSION) > dockerfile'
+            sh 'echo ADD https://get.aquasec.com/microscanner / >> dockerfile'
+            sh 'echo RUN chmod +x /microscanner >> dockerfile' 
+            sh 'echo ARG token  >> dockerfile'
+            sh 'echo RUN /microscanner "\$"{token} --no-verify --full-output >> dockerfile'
+            sh 'echo RUN echo No vulnerabilities!  >> dockerfile'
+            sh 'docker build --build-arg=token=NjUxMTUxZDA2MGFi --no-cache --network=host . '
             // promote through all 'Auto' promotion Environments
             sh "jx promote -b --all-auto --timeout 1h --version \$(cat ../../VERSION)"
           }
